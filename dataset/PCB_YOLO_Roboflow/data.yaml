@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 6
+names: ['copper', 'mousebite', 'open', 'pin-hole', 'short', 'spur']
+
+roboflow:
+  workspace: umang-p-kaklotar
+  project: pcb-defect-detection-tyger
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/umang-p-kaklotar/pcb-defect-detection-tyger/dataset/1

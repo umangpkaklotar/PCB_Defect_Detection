@@ -1,0 +1,7 @@
+# Basic libraries
+ultralytics → YOLO
+opencv-python → Image/Video/Webcam
+numpy → Numerical operations
+pandas → Dataset/Data processing
+matplotlib → Graphs
+pillow → Image handling 

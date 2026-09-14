@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Basic page settings -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Browser tab title -->
+    <title>PCB AI Quality Inspection</title>
+
+    <!-- Connect CSS file -->
+    <link rel="stylesheet" href="/frontend/style.css">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         MAIN APPLICATION
+         ===================================================== -->
+    <div class="app">
+
+        <!-- =================================================
+             HEADER
+             ================================================= -->
+        <header class="header">
+
+            <div class="brand">
+                <div class="brand-icon">⚡</div>
+
+                <div>
+                    <h1>PCB AI Inspection</h1>
+                    <p>AI-Powered Quality Control System</p>
+                </div>
+            </div>
+
+            <!-- Model status -->
+            <div class="model-status">
+                <span class="status-dot"></span>
+                <span>AI Model Online</span>
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             MAIN CONTENT
+             ================================================= -->
+        <main class="main-content">
+
+            <!-- Page heading -->
+            <section class="page-heading">
+                <h2>PCB Quality Inspection</h2>
+                <p>
+                    Upload a PCB image or use your camera to detect
+                    manufacturing defects using AI.
+                </p>
+            </section>
+
+
+            <!-- =================================================
+                 INPUT OPTIONS
+                 ================================================= -->
+            <section class="input-section">
+
+                <!-- Upload option -->
+                <div class="input-card">
+
+                    <div class="card-icon">📁</div>
+
+                    <h3>Upload PCB Image</h3>
+
+                    <p>
+                        Select a PCB image from your computer
+                        for inspection.
+                    </p>
+
+                    <button id="uploadBtn" class="primary-btn">
+                        Upload Image
+                    </button>
+
+                    <!-- Hidden file input -->
+                    <input
+                        type="file"
+                        id="imageInput"
+                        accept="image/*"
+                        hidden
+                    >
+
+                </div>
+
+
+                <!-- Camera option -->
+                <div class="input-card">
+
+                    <div class="card-icon">📷</div>
+
+                    <h3>Live Camera</h3>
+
+                    <p>
+                        Open your webcam and inspect PCB defects
+                        in real time.
+                    </p>
+
+                    <button id="cameraBtn" class="secondary-btn">
+                        Start Camera
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 INSPECTION AREA
+                 ================================================= -->
+            <section class="inspection-section">
+
+                <div class="inspection-header">
+
+                    <div>
+                        <h2>Inspection View</h2>
+                        <p>Detected defects will appear here.</p>
+                    </div>
+
+                    <div id="inspectionStatus" class="waiting-status">
+                        Waiting for PCB...
+                    </div>
+
+                </div>
+
+
+                <!-- Image / Camera display -->
+                <div class="inspection-view">
+
+                    <!-- Placeholder before image/camera starts -->
+                    <div id="placeholder" class="placeholder">
+
+                        <div class="placeholder-icon">
+                            🔬
+                        </div>
+
+                        <h3>No PCB Selected</h3>
+
+                        <p>
+                            Upload a PCB image or start the camera
+                            to begin inspection.
+                        </p>
+
+                    </div>
+
+
+                    <!-- Uploaded image -->
+                    <img
+                        id="previewImage"
+                        class="preview-image"
+                        alt="PCB Preview"
+                        hidden
+                    >
+
+
+                    <!-- Live camera -->
+                    <video
+                        id="cameraVideo"
+                        class="camera-video"
+                        autoplay
+                        playsinline
+                        hidden
+                    ></video>
+
+                </div>
+
+
+                <!-- =================================================
+                     CAMERA CONTROLS
+                     ================================================= -->
+                <div id="cameraControls" class="camera-controls" hidden>
+
+                    <button id="stopCameraBtn" class="danger-btn">
+                        Stop Camera
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 INSPECTION RESULT
+                 ================================================= -->
+            <section class="result-section">
+
+                <div class="result-header">
+                    <h2>Inspection Result</h2>
+                </div>
+
+
+                <!-- PASS / FAIL -->
+                <div id="resultBox" class="result-box waiting">
+
+                    <div id="resultIcon" class="result-icon">
+                        —
+                    </div>
+
+                    <div>
+                        <h3 id="resultTitle">
+                            Waiting for Inspection
+                        </h3>
+
+                        <p id="resultMessage">
+                            Run an inspection to see the result.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     STATISTICS
+                     ================================================= -->
+                <div class="statistics">
+
+                    <!-- Total defects -->
+                    <div class="stat-card">
+
+                        <span class="stat-label">
+                            Total Defects
+                        </span>
+
+                        <strong id="totalDefects">
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <!-- Highest confidence -->
+                    <div class="stat-card">
+
+                        <span class="stat-label">
+                            Highest Confidence
+                        </span>
+
+                        <strong id="highestConfidence">
+                            0%
+                        </strong>
+
+                    </div>
+
+
+                    <!-- Inspection status -->
+                    <div class="stat-card">
+
+                        <span class="stat-label">
+                            Status
+                        </span>
+
+                        <strong id="statusText">
+                            Waiting
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     DEFECT SUMMARY
+                     ================================================= -->
+                <div class="defect-summary">
+
+                    <h3>Defect Summary</h3>
+
+                    <div id="defectList" class="defect-list">
+
+                        <div class="no-defects">
+                            No inspection data available.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+
+        <!-- =====================================================
+             FOOTER
+             ===================================================== -->
+        <footer class="footer">
+
+            <p>
+                PCB AI Quality Inspection System
+            </p>
+
+            <p>
+                YOLO Deep Learning Model
+            </p>
+
+        </footer>
+
+    </div>
+
+
+    <!-- Connect JavaScript -->
+    <script src="/frontend/script.js"></script>
+
+</body>
+
+</html>

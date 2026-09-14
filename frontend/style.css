@@ -1,0 +1,706 @@
+/* ============================================================
+   PCB AI QUALITY INSPECTION
+   MAIN STYLESHEET
+   ============================================================ */
+
+
+/* ============================================================
+   GLOBAL RESET
+   ============================================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* ============================================================
+   BODY
+   ============================================================ */
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #0b1120;
+    color: #e5e7eb;
+    min-height: 100vh;
+}
+
+
+/* ============================================================
+   MAIN APPLICATION
+   ============================================================ */
+
+.app {
+    min-height: 100vh;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.header {
+    width: 100%;
+    padding: 20px 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background: #111827;
+    border-bottom: 1px solid #1f2937;
+}
+
+
+/* Brand */
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+
+.brand-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: #1d4ed8;
+    font-size: 24px;
+}
+
+
+.brand h1 {
+    font-size: 21px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+
+.brand p {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+
+/* Model status */
+
+.model-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 9px 14px;
+
+    border: 1px solid #1f2937;
+    border-radius: 20px;
+
+    background: #0f172a;
+
+    font-size: 13px;
+    color: #d1d5db;
+}
+
+
+.status-dot {
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+
+    background: #22c55e;
+}
+
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+
+.main-content {
+    width: min(1200px, 92%);
+    margin: 0 auto;
+
+    padding: 45px 0;
+}
+
+
+/* ============================================================
+   PAGE HEADING
+   ============================================================ */
+
+.page-heading {
+    margin-bottom: 30px;
+}
+
+
+.page-heading h2 {
+    font-size: 32px;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+
+.page-heading p {
+    color: #9ca3af;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+
+/* ============================================================
+   INPUT SECTION
+   ============================================================ */
+
+.input-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 22px;
+
+    margin-bottom: 30px;
+}
+
+
+/* Input card */
+
+.input-card {
+    padding: 30px;
+
+    background: #111827;
+
+    border: 1px solid #1f2937;
+    border-radius: 16px;
+
+    transition: 0.25s ease;
+}
+
+
+.input-card:hover {
+    border-color: #374151;
+    transform: translateY(-2px);
+}
+
+
+.card-icon {
+    font-size: 30px;
+    margin-bottom: 18px;
+}
+
+
+.input-card h3 {
+    font-size: 19px;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+
+.input-card p {
+    color: #9ca3af;
+    font-size: 14px;
+    line-height: 1.6;
+
+    margin-bottom: 22px;
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+button {
+    border: none;
+    cursor: pointer;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    padding: 11px 18px;
+
+    border-radius: 9px;
+
+    transition: 0.2s ease;
+}
+
+
+.primary-btn {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+
+.primary-btn:hover {
+    background: #1d4ed8;
+}
+
+
+.secondary-btn {
+    background: #374151;
+    color: #ffffff;
+}
+
+
+.secondary-btn:hover {
+    background: #4b5563;
+}
+
+
+.danger-btn {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+
+.danger-btn:hover {
+    background: #b91c1c;
+}
+
+
+/* ============================================================
+   INSPECTION SECTION
+   ============================================================ */
+
+.inspection-section {
+    background: #111827;
+
+    border: 1px solid #1f2937;
+    border-radius: 16px;
+
+    overflow: hidden;
+
+    margin-bottom: 30px;
+}
+
+
+.inspection-header {
+    padding: 20px 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 1px solid #1f2937;
+}
+
+
+.inspection-header h2 {
+    color: #ffffff;
+    font-size: 19px;
+    margin-bottom: 5px;
+}
+
+
+.inspection-header p {
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+
+/* Waiting status */
+
+.waiting-status {
+    padding: 8px 13px;
+
+    border-radius: 20px;
+
+    background: #1f2937;
+    color: #9ca3af;
+
+    font-size: 12px;
+}
+
+
+/* ============================================================
+   INSPECTION VIEW
+   ============================================================ */
+
+.inspection-view {
+    min-height: 450px;
+
+    background: #020617;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+
+    overflow: hidden;
+}
+
+
+/* Placeholder */
+
+.placeholder {
+    text-align: center;
+    padding: 30px;
+}
+
+
+.placeholder-icon {
+    font-size: 55px;
+    margin-bottom: 18px;
+}
+
+
+.placeholder h3 {
+    color: #ffffff;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+
+.placeholder p {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+
+/* Uploaded image */
+
+.preview-image {
+    width: 100%;
+    max-height: 650px;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+/* Camera */
+
+.camera-video {
+    width: 100%;
+    max-height: 650px;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+/* ============================================================
+   CAMERA CONTROLS
+   ============================================================ */
+
+.camera-controls {
+    padding: 15px 20px;
+
+    display: flex;
+    justify-content: center;
+
+    background: #0f172a;
+
+    border-top: 1px solid #1f2937;
+}
+
+
+/* ============================================================
+   RESULT SECTION
+   ============================================================ */
+
+.result-section {
+    background: #111827;
+
+    border: 1px solid #1f2937;
+    border-radius: 16px;
+
+    padding: 25px;
+
+    margin-bottom: 30px;
+}
+
+
+.result-header {
+    margin-bottom: 20px;
+}
+
+
+.result-header h2 {
+    color: #ffffff;
+    font-size: 20px;
+}
+
+
+/* ============================================================
+   RESULT BOX
+   ============================================================ */
+
+.result-box {
+    display: flex;
+    align-items: center;
+
+    gap: 16px;
+
+    padding: 20px;
+
+    border-radius: 12px;
+
+    margin-bottom: 20px;
+}
+
+
+.result-box.waiting {
+    background: #0f172a;
+    border: 1px solid #1f2937;
+}
+
+
+.result-box.pass {
+    background: #052e16;
+    border: 1px solid #166534;
+}
+
+
+.result-box.fail {
+    background: #450a0a;
+    border: 1px solid #991b1b;
+}
+
+
+.result-icon {
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #1f2937;
+
+    font-size: 24px;
+}
+
+
+.result-box h3 {
+    color: #ffffff;
+    font-size: 18px;
+
+    margin-bottom: 5px;
+}
+
+
+.result-box p {
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+
+/* ============================================================
+   STATISTICS
+   ============================================================ */
+
+.statistics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 15px;
+
+    margin-bottom: 25px;
+}
+
+
+.stat-card {
+    padding: 20px;
+
+    background: #0f172a;
+
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+}
+
+
+.stat-label {
+    display: block;
+
+    color: #9ca3af;
+
+    font-size: 12px;
+
+    margin-bottom: 9px;
+}
+
+
+.stat-card strong {
+    font-size: 24px;
+    color: #ffffff;
+}
+
+
+/* ============================================================
+   DEFECT SUMMARY
+   ============================================================ */
+
+.defect-summary {
+    padding-top: 5px;
+}
+
+
+.defect-summary h3 {
+    color: #ffffff;
+
+    font-size: 16px;
+
+    margin-bottom: 15px;
+}
+
+
+.defect-list {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 10px;
+}
+
+
+/* Defect item */
+
+.defect-item {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 13px 15px;
+
+    background: #0f172a;
+
+    border: 1px solid #1f2937;
+
+    border-radius: 9px;
+}
+
+
+.defect-name {
+    color: #d1d5db;
+
+    font-size: 13px;
+}
+
+
+.defect-count {
+    font-weight: 700;
+
+    color: #ffffff;
+
+    background: #374151;
+
+    padding: 4px 9px;
+
+    border-radius: 6px;
+
+    font-size: 12px;
+}
+
+
+/* No defects */
+
+.no-defects {
+    grid-column: 1 / -1;
+
+    padding: 20px;
+
+    text-align: center;
+
+    color: #6b7280;
+
+    background: #0f172a;
+
+    border: 1px solid #1f2937;
+
+    border-radius: 9px;
+
+    font-size: 13px;
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.footer {
+    padding: 25px;
+
+    border-top: 1px solid #1f2937;
+
+    background: #080d19;
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 25px;
+
+    color: #6b7280;
+
+    font-size: 12px;
+}
+
+
+/* ============================================================
+   RESPONSIVE DESIGN
+   ============================================================ */
+
+@media (max-width: 800px) {
+
+    .header {
+        padding: 18px 20px;
+    }
+
+
+    .model-status {
+        display: none;
+    }
+
+
+    .main-content {
+        width: 94%;
+
+        padding: 30px 0;
+    }
+
+
+    .page-heading h2 {
+        font-size: 26px;
+    }
+
+
+    .input-section {
+        grid-template-columns: 1fr;
+    }
+
+
+    .statistics {
+        grid-template-columns: 1fr;
+    }
+
+
+    .defect-list {
+        grid-template-columns: 1fr;
+    }
+
+
+    .inspection-view {
+        min-height: 350px;
+    }
+
+
+    .footer {
+        flex-direction: column;
+
+        align-items: center;
+
+        gap: 7px;
+    }
+}
