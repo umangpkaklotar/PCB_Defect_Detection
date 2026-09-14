@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Machine learning artifacts and large files
+*.pt
+*.onnx
+*.weights
+*.ckpt
+models/
+runs/
+
+# Local datasets and generated test data
+dataset/
+
+# User uploads and generated media
+uploads/
+qr_codes/
+simulation/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp

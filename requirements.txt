@@ -1,7 +1,19 @@
-# Basic libraries
-ultralytics → YOLO
-opencv-python → Image/Video/Webcam
-numpy → Numerical operations
-pandas → Dataset/Data processing
-matplotlib → Graphs
-pillow → Image handling 
+# PCB AI inspection project dependencies
+# Python 3.12 compatible versions used by the project environment.
+
+# YOLOv8 training and inference
+ultralytics==8.4.150
+
+# FastAPI backend and file uploads
+fastapi==0.141.1
+uvicorn==0.53.0
+python-multipart==0.0.32
+
+# Image, video, and numerical processing
+opencv-python==5.0.0.93
+numpy==2.5.3
+pillow==12.3.0
+
+# Training/data analysis and plotting
+pandas==3.0.5
+matplotlib==3.11.2
