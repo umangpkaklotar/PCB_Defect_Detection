@@ -55,6 +55,16 @@ from backend.product_manager import (
 )
 
 
+PCB_DEFECT_CLASSES = (
+    "open",
+    "short",
+    "mousebite",
+    "spur",
+    "copper",
+    "pin-hole"
+)
+
+
 # ============================================================
 # CREATE FASTAPI APPLICATION
 # ============================================================
@@ -238,7 +248,10 @@ def run_prediction(image):
 
     detections = []
 
-    defect_counts = {}
+    defect_counts = {
+        defect_class: 0
+        for defect_class in PCB_DEFECT_CLASSES
+    }
 
 
     # --------------------------------------------------------
@@ -366,6 +379,8 @@ def run_prediction(image):
         ),
 
         "defect_counts": defect_counts,
+
+        "defect_classes": list(PCB_DEFECT_CLASSES),
 
         "detections": detections,
 

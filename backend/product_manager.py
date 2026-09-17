@@ -31,6 +31,15 @@ _database = None
 _indexes_ready = False
 _connection_lock = Lock()
 
+PCB_DEFECT_CLASSES = (
+	"open",
+	"short",
+	"mousebite",
+	"spur",
+	"copper",
+	"pin-hole"
+)
+
 
 def _get_database():
 	"""Return the shared MongoDB database connection."""
@@ -203,7 +212,30 @@ def find_product_by_fingerprint(image_fingerprint):
 
 
 def record_inspection(product_id, inspection):
-	"""Store the latest inspection summary against an existing product."""
+	"""Store only the PCB inspection summary and six defect counts."""
+
+	defect_counts = {
+		defect_class: int(
+			inspection.get("defect_counts", {}).get(defect_class, 0)
+		)
+		for defect_class in PCB_DEFECT_CLASSES
+	}
+	defect_summary = [
+		{
+			"name": defect_class,
+			"count": defect_counts[defect_class]
+		}
+		for defect_class in PCB_DEFECT_CLASSES
+	]
+
+	inspection_summary = {
+		"inspected_at": datetime.now(timezone.utc),
+		"status": inspection["status"],
+		"total_defects": inspection["total_defects"],
+		"highest_confidence": inspection["highest_confidence"],
+		"defect_counts": defect_counts,
+		"defect_summary": defect_summary
+	}
 
 	try:
 		updated_product = _get_database().products.find_one_and_update(
@@ -212,31 +244,15 @@ def record_inspection(product_id, inspection):
 				"$set": {
 					"image_fingerprint": inspection["image_fingerprint"],
 					"status": inspection["status"],
-					"last_inspection": {
-						"inspected_at": datetime.now(timezone.utc),
-						"status": inspection["status"],
-						"total_defects": inspection["total_defects"],
-						"highest_confidence": inspection[
-							"highest_confidence"
-						],
-						"defect_counts": inspection["defect_counts"],
-						"detections": inspection["detections"]
-					}
+					"defect_counts": defect_counts,
+					"defect_summary": defect_summary,
+					"last_inspection": inspection_summary
 				},
 				"$inc": {
 					"inspection_count": 1
 				},
 				"$push": {
-					"inspection_history": {
-						"inspected_at": datetime.now(timezone.utc),
-						"status": inspection["status"],
-						"total_defects": inspection["total_defects"],
-						"highest_confidence": inspection[
-							"highest_confidence"
-						],
-						"defect_counts": inspection["defect_counts"],
-						"detections": inspection["detections"]
-					}
+					"inspection_history": inspection_summary
 				}
 			},
 			return_document=ReturnDocument.AFTER,

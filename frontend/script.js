@@ -987,40 +987,41 @@ function updateDefectSummary(defects) {
     defectList.innerHTML =
         "";
 
+    const defectNames = [
+        "open",
+        "short",
+        "mousebite",
+        "spur",
+        "copper",
+        "pin-hole"
+    ];
 
-    // --------------------------------------------------------
-    // No defects
-    // --------------------------------------------------------
-
-    if (
-        !defects ||
-        Object.keys(defects).length === 0
-    ) {
-
-        defectList.innerHTML = `
-            <div class="no-defects">
-                No defects detected.
-            </div>
-        `;
-
-        totalDefects.textContent =
-            "0";
-
-        showPassResult();
-
-        return;
-    }
-
-
-    // --------------------------------------------------------
-    // Create defect items
-    // --------------------------------------------------------
-
-    Object.keys(defects).forEach(
+    const defectEntries = defectNames.map(
         function (defectName) {
+            return [
+                defectName,
+                Number(defects && defects[defectName] || 0)
+            ];
+        }
+    );
 
-            const count =
-                defects[defectName];
+    const totalDetected = defectEntries.reduce(
+        function (total, entry) {
+            return total + entry[1];
+        },
+        0
+    );
+
+
+    // --------------------------------------------------------
+    // Display all six defect classes
+    // --------------------------------------------------------
+
+    defectEntries.forEach(
+        function (entry) {
+
+            const defectName = entry[0];
+            const count = entry[1];
 
 
             const item =
@@ -1042,23 +1043,26 @@ function updateDefectSummary(defects) {
             `;
 
 
-            defectList.appendChild(
-                item
-            );
+            defectList.appendChild(item);
 
         }
     );
+
+    totalDefects.textContent =
+        totalDetected;
 
 
     // --------------------------------------------------------
     // PASS / FAIL
     // --------------------------------------------------------
 
-    if (
-        Object.keys(defects).length > 0
-    ) {
+    if (totalDetected > 0) {
 
         showFailResult();
+
+    } else {
+
+        showPassResult();
 
     }
 
