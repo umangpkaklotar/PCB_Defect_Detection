@@ -473,6 +473,13 @@ This application is a prototype and must not be used as the sole safety or quali
 
 ### API does not start
 
+If the traceback ends with `ImportError: cannot import name 'Image' from 'PIL'`, Pillow is incomplete or corrupted inside the virtual environment. Reinstall the pinned package:
+
+```powershell
+python -m pip install --force-reinstall --no-cache-dir Pillow==12.3.0
+python -c "from PIL import Image; print(Image.__file__)"
+```
+
 Check that the model exists:
 
 ```powershell
@@ -484,6 +491,14 @@ Run the server from the repository root and ensure the virtual environment is ac
 ```powershell
 python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 ```
+
+If Uvicorn reports `WinError 10048` or says the address is already in use, another process is already using port `8000`. Stop the existing Uvicorn process, or use another port:
+
+```powershell
+python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8001
+```
+
+Then open `http://127.0.0.1:8001/`.
 
 ### Frontend cannot call the API
 

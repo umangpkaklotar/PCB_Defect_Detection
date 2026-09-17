@@ -50,11 +50,26 @@
 
             <!-- Page heading -->
             <section class="page-heading">
-                <h2>PCB Quality Inspection</h2>
-                <p>
-                    Upload a PCB image or use your camera to detect
-                    manufacturing defects using AI.
-                </p>
+                <div class="page-heading-content">
+                    <div>
+                        <h2>PCB Quality Inspection</h2>
+                        <p>
+                            Upload a PCB image or use your camera to detect
+                            manufacturing defects using AI.
+                        </p>
+                    </div>
+
+                    <div class="product-actions">
+                        <button id="newProductBtn" class="primary-btn">
+                            New PCB Product
+                        </button>
+
+                        <div class="product-id-display">
+                            <span class="product-id-label">Current Product</span>
+                            <strong id="currentProductId">Not created</strong>
+                        </div>
+                    </div>
+                </div>
             </section>
 
 
@@ -167,6 +182,20 @@
                         playsinline
                         hidden
                     ></video>
+
+                    <!-- Latest annotated camera frame -->
+                    <img
+                        id="cameraResultImage"
+                        class="camera-result-image"
+                        alt="Annotated camera inspection result"
+                        hidden
+                    >
+
+                    <!-- Hidden canvas used to capture frames for the API -->
+                    <canvas
+                        id="cameraCanvas"
+                        hidden
+                    ></canvas>
 
                 </div>
 

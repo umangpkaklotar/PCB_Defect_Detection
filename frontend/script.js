@@ -43,12 +43,20 @@ const API_URL =
 
 const uploadBtn = document.getElementById("uploadBtn");
 const imageInput = document.getElementById("imageInput");
+const newProductBtn =
+    document.getElementById("newProductBtn");
+const currentProductId =
+    document.getElementById("currentProductId");
 
 const cameraBtn = document.getElementById("cameraBtn");
 const stopCameraBtn = document.getElementById("stopCameraBtn");
 
 const previewImage = document.getElementById("previewImage");
 const cameraVideo = document.getElementById("cameraVideo");
+const cameraResultImage =
+    document.getElementById("cameraResultImage");
+const cameraCanvas =
+    document.getElementById("cameraCanvas");
 
 const placeholder = document.getElementById("placeholder");
 const cameraControls = document.getElementById("cameraControls");
@@ -86,6 +94,15 @@ const defectList =
 // ============================================================
 
 let cameraStream = null;
+let cameraPredictionInterval = null;
+let cameraPredictionInFlight = false;
+
+const CAMERA_API_URL =
+    "http://127.0.0.1:8000";
+
+const CAMERA_FRAME_INTERVAL = 750;
+
+let activeProductId = null;
 
 
 // ============================================================
@@ -97,6 +114,116 @@ uploadBtn.addEventListener("click", function () {
     imageInput.click();
 
 });
+
+
+// ============================================================
+// PRODUCT CREATION
+// ============================================================
+
+newProductBtn.addEventListener(
+    "click",
+    async function () {
+
+        try {
+            await createProduct();
+
+        } catch (error) {
+
+            console.error(
+                "Product creation error:",
+                error
+            );
+
+            currentProductId.textContent =
+                "Unavailable";
+
+            alert(
+                `Could not create PCB product.\n\n${error.message}`
+            );
+
+        } finally {
+
+            newProductBtn.disabled =
+                false;
+
+            newProductBtn.textContent =
+                "New PCB Product";
+
+        }
+
+    }
+);
+
+
+async function createProduct() {
+
+    newProductBtn.disabled =
+        true;
+
+    newProductBtn.textContent =
+        "Creating...";
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/products`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        product_type: "PCB"
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail ||
+                `Server returned ${response.status}`
+            );
+        }
+
+        activeProductId =
+            data.product_id;
+
+        currentProductId.textContent =
+            activeProductId;
+
+        inspectionStatus.textContent =
+            `${activeProductId} ready for inspection`;
+
+        return data;
+
+    } finally {
+
+        newProductBtn.disabled =
+            false;
+
+        newProductBtn.textContent =
+            "New PCB Product";
+
+    }
+
+}
+
+
+async function ensureActiveProduct() {
+
+    if (activeProductId) {
+        return activeProductId;
+    }
+
+    const product =
+        await createProduct();
+
+    return product.product_id;
+}
 
 
 // ============================================================
@@ -192,6 +319,19 @@ imageInput.addEventListener(
 
         try {
 
+            const productId =
+                await ensureActiveProduct();
+
+            formData.append(
+                "product_id",
+                productId
+            );
+
+            formData.append(
+                "new_product_on_change",
+                "true"
+            );
+
             console.log(
                 "Sending image to FastAPI..."
             );
@@ -230,6 +370,16 @@ imageInput.addEventListener(
 
             const data =
                 await response.json();
+
+            if (data.product_id) {
+                activeProductId = data.product_id;
+                currentProductId.textContent = activeProductId;
+            }
+
+            if (data.product_message) {
+                inspectionStatus.textContent =
+                    data.product_message;
+            }
 
 
             console.log(
@@ -285,14 +435,22 @@ imageInput.addEventListener(
                 showPassResult();
 
                 inspectionStatus.textContent =
-                    "Inspection Complete";
+                    `Inspection Complete${
+                        data.product_message
+                            ? ` - ${data.product_message}`
+                            : ""
+                    }`;
 
             } else {
 
                 showFailResult();
 
                 inspectionStatus.textContent =
-                    "Defect Detected";
+                    `Defect Detected${
+                        data.product_message
+                            ? ` - ${data.product_message}`
+                            : ""
+                    }`;
 
             }
 
@@ -363,6 +521,8 @@ async function startCamera() {
 
     try {
 
+        await ensureActiveProduct();
+
         // ----------------------------------------------------
         // Request camera
         // ----------------------------------------------------
@@ -391,6 +551,9 @@ async function startCamera() {
         cameraVideo.hidden =
             false;
 
+        cameraResultImage.hidden =
+            true;
+
         previewImage.hidden =
             true;
 
@@ -412,6 +575,8 @@ async function startCamera() {
             "Live Camera Ready"
         );
 
+        startCameraPredictionLoop();
+
 
     } catch (error) {
 
@@ -425,6 +590,12 @@ async function startCamera() {
             "Camera access could not be started.\n\n" +
             "Please allow camera permission."
         );
+
+        inspectionStatus.textContent =
+            "Camera unavailable";
+
+        resultMessage.textContent =
+            "Camera permission was denied or no camera is available.";
 
     }
 
@@ -447,6 +618,18 @@ stopCameraBtn.addEventListener(
 
 function stopCamera() {
 
+    if (cameraPredictionInterval) {
+
+        clearInterval(
+            cameraPredictionInterval
+        );
+
+        cameraPredictionInterval = null;
+    }
+
+    cameraPredictionInFlight =
+        false;
+
     if (cameraStream) {
 
         cameraStream
@@ -465,6 +648,12 @@ function stopCamera() {
 
     cameraVideo.srcObject =
         null;
+
+    cameraResultImage.src =
+        "";
+
+    cameraResultImage.hidden =
+        true;
 
     cameraVideo.hidden =
         true;
@@ -494,6 +683,196 @@ function stopCamera() {
 
         inspectionStatus.textContent =
             "Waiting for PCB...";
+
+    }
+
+}
+
+
+// ============================================================
+// CAMERA FRAME PREDICTION
+// ============================================================
+
+function startCameraPredictionLoop() {
+
+    if (cameraPredictionInterval) {
+        return;
+    }
+
+    captureCameraFrame();
+
+    cameraPredictionInterval =
+        setInterval(
+            captureCameraFrame,
+            CAMERA_FRAME_INTERVAL
+        );
+
+}
+
+
+async function captureCameraFrame() {
+
+    if (
+        !cameraStream ||
+        cameraPredictionInFlight ||
+        cameraVideo.readyState < 2 ||
+        !cameraVideo.videoWidth ||
+        !cameraVideo.videoHeight
+    ) {
+        return;
+    }
+
+    cameraPredictionInFlight =
+        true;
+
+    cameraCanvas.width =
+        cameraVideo.videoWidth;
+
+    cameraCanvas.height =
+        cameraVideo.videoHeight;
+
+    const context =
+        cameraCanvas.getContext("2d");
+
+    context.drawImage(
+        cameraVideo,
+        0,
+        0,
+        cameraCanvas.width,
+        cameraCanvas.height
+    );
+
+    try {
+
+        const blob =
+            await new Promise(
+                function (resolve) {
+
+                    cameraCanvas.toBlob(
+                        resolve,
+                        "image/jpeg",
+                        0.85
+                    );
+
+                }
+            );
+
+        if (!blob) {
+            throw new Error(
+                "Could not capture camera frame."
+            );
+        }
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            "file",
+            blob,
+            "camera-frame.jpg"
+        );
+
+        formData.append(
+            "product_id",
+            activeProductId
+        );
+
+        formData.append(
+            "new_product_on_change",
+            "false"
+        );
+
+        const response =
+            await fetch(
+                `${CAMERA_API_URL}/predict-frame`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                `Server returned ${response.status}`
+            );
+        }
+
+        const data =
+            await response.json();
+
+        if (!cameraStream) {
+            return;
+        }
+
+        if (data.product_id) {
+            activeProductId = data.product_id;
+            currentProductId.textContent = activeProductId;
+        }
+
+        if (data.image) {
+
+            cameraResultImage.src =
+                `data:image/jpeg;base64,${data.image}`;
+
+            cameraResultImage.hidden =
+                false;
+
+        }
+
+        totalDefects.textContent =
+            data.total_defects || 0;
+
+        updateConfidence(
+            data.highest_confidence || 0
+        );
+
+        updateDefectSummary(
+            data.defect_counts || {}
+        );
+
+        if (data.status === "PASS") {
+
+            showPassResult();
+            inspectionStatus.textContent =
+                "Live Camera - PASS";
+
+        } else {
+
+            showFailResult();
+            inspectionStatus.textContent =
+                "Live Camera - Defect Detected";
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Camera prediction error:",
+            error
+        );
+
+        inspectionStatus.textContent =
+            "Camera API Error";
+
+        resultBox.className =
+            "result-box fail";
+
+        resultIcon.textContent =
+            "⚠";
+
+        resultTitle.textContent =
+            "Camera Inspection Error";
+
+        resultMessage.textContent =
+            "Could not connect to the camera inspection server.";
+
+        statusText.textContent =
+            "ERROR";
+
+    } finally {
+
+        cameraPredictionInFlight =
+            false;
 
     }
 

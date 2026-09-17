@@ -9,6 +9,10 @@ fastapi==0.141.1
 uvicorn==0.53.0
 python-multipart==0.0.32
 
+# MongoDB integration and environment configuration
+pymongo==4.15.1
+python-dotenv==1.1.1
+
 # Image, video, and numerical processing
 opencv-python==5.0.0.93
 numpy==2.5.3

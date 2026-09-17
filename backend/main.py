@@ -25,11 +25,13 @@
 # ============================================================
 
 from pathlib import Path
+import hashlib
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 from ultralytics import YOLO
 
@@ -38,6 +40,19 @@ import io
 import base64
 import cv2
 import numpy as np
+
+from backend.product_manager import (
+    ProductDatabaseError,
+    ProductIdConflictError,
+    ProductNotFoundError,
+    close_database,
+    create_product,
+    get_product,
+    find_product_by_fingerprint,
+    initialize_database,
+    list_recent_products,
+    record_inspection,
+)
 
 
 # ============================================================
@@ -68,6 +83,33 @@ app.add_middleware(
 )
 
 
+class ProductCreateRequest(BaseModel):
+    """Validated request body for creating a PCB product."""
+
+    product_type: str = Field(
+        default="PCB",
+        min_length=1,
+        max_length=100
+    )
+
+
+@app.on_event("startup")
+def startup_database():
+    """Check MongoDB without preventing inspection from loading."""
+
+    try:
+        initialize_database()
+        print("MongoDB connected successfully.")
+    except ProductDatabaseError as error:
+        print(f"MongoDB unavailable: {error}")
+        print("Product APIs will return errors until MongoDB is available.")
+
+
+@app.on_event("shutdown")
+def shutdown_database():
+    close_database()
+
+
 # ============================================================
 # LOAD TRAINED YOLO MODEL
 # ============================================================
@@ -96,6 +138,74 @@ def health_check():
         "status": "online",
         "message": "PCB AI Inspection API is running"
     }
+
+
+# ============================================================
+# PRODUCT APIs
+# ============================================================
+
+@app.post("/api/products", status_code=201)
+def create_pcb_product(request: ProductCreateRequest):
+    """Generate and store the next atomic PCB Product ID."""
+
+    try:
+        product_type = request.product_type.strip()
+        if not product_type:
+            raise HTTPException(
+                status_code=422,
+                detail="product_type cannot be empty."
+            )
+
+        product = create_product(product_type)
+        return product
+    except HTTPException:
+        raise
+    except ProductIdConflictError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    except ProductDatabaseError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+@app.get("/api/products/{product_id}")
+def retrieve_pcb_product(product_id: str):
+    """Retrieve a PCB product by Product ID."""
+
+    if not product_id.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="Product ID cannot be empty."
+        )
+
+    try:
+        product = get_product(product_id.strip())
+        if product is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Product not found."
+            )
+        return product
+    except HTTPException:
+        raise
+    except ProductDatabaseError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+@app.get("/api/products")
+def recent_pcb_products(limit: int = 20):
+    """List recently created PCB products."""
+
+    if limit < 1 or limit > 100:
+        raise HTTPException(
+            status_code=422,
+            detail="limit must be between 1 and 100."
+        )
+
+    try:
+        return {
+            "products": list_recent_products(limit)
+        }
+    except ProductDatabaseError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
 
 
 # ============================================================
@@ -263,6 +373,81 @@ def run_prediction(image):
     }
 
 
+def create_image_fingerprint(image):
+    """Create a repeatable fingerprint from normalized PCB image pixels."""
+
+    normalized = image.convert("RGB").resize((64, 64))
+    return hashlib.sha256(normalized.tobytes()).hexdigest()
+
+
+def link_inspection_to_product(
+    result,
+    image,
+    product_id=None,
+    create_new_on_change=True
+):
+    """Create, reuse, or update the product associated with an inspection."""
+
+    image_fingerprint = create_image_fingerprint(image)
+    existing_product = None
+    product_reused = False
+
+    if product_id:
+        existing_product = get_product(product_id)
+        if existing_product is None:
+            raise ProductNotFoundError(
+                f"Product {product_id} was not found."
+            )
+
+        stored_fingerprint = existing_product.get("image_fingerprint")
+        if (
+            create_new_on_change and
+            stored_fingerprint and
+            stored_fingerprint != image_fingerprint
+        ):
+            existing_product = find_product_by_fingerprint(
+                image_fingerprint
+            )
+            if existing_product:
+                product_id = existing_product["product_id"]
+                product_reused = True
+            else:
+                product = create_product(
+                    "PCB",
+                    image_fingerprint=image_fingerprint
+                )
+                product_id = product["product_id"]
+        else:
+            product_reused = True
+    else:
+        existing_product = find_product_by_fingerprint(
+            image_fingerprint
+        )
+        if existing_product:
+            product_id = existing_product["product_id"]
+            product_reused = True
+        else:
+            product = create_product(
+                "PCB",
+                image_fingerprint=image_fingerprint
+            )
+            product_id = product["product_id"]
+
+    inspection = {
+        **result,
+        "image_fingerprint": image_fingerprint
+    }
+    record_inspection(product_id, inspection)
+    result["product_id"] = product_id
+    result["product_reused"] = product_reused
+    result["product_message"] = (
+        "Existing PCB found; details updated."
+        if product_reused
+        else "New PCB product record created."
+    )
+    return result
+
+
 # ============================================================
 # IMAGE UPLOAD API
 # ============================================================
@@ -276,7 +461,9 @@ def run_prediction(image):
 
 @app.post("/predict")
 async def predict_image(
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    product_id: str | None = Form(default=None),
+    new_product_on_change: bool = Form(default=True)
 ):
 
     # --------------------------------------------------------
@@ -301,8 +488,23 @@ async def predict_image(
 
     result = run_prediction(image)
 
-
-    return result
+    try:
+        return link_inspection_to_product(
+            result,
+            image,
+            product_id,
+            new_product_on_change
+        )
+    except ProductNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ProductIdConflictError as error:
+        result["product_id"] = product_id
+        result["database_warning"] = str(error)
+        return result
+    except ProductDatabaseError as error:
+        result["product_id"] = product_id
+        result["database_warning"] = str(error)
+        return result
 
 
 # ============================================================
@@ -319,7 +521,9 @@ async def predict_image(
 
 @app.post("/predict-frame")
 async def predict_frame(
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    product_id: str | None = Form(default=None),
+    new_product_on_change: bool = Form(default=False)
 ):
 
     # --------------------------------------------------------
@@ -344,8 +548,23 @@ async def predict_frame(
 
     result = run_prediction(image)
 
-
-    return result
+    try:
+        return link_inspection_to_product(
+            result,
+            image,
+            product_id,
+            new_product_on_change
+        )
+    except ProductNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ProductIdConflictError as error:
+        result["product_id"] = product_id
+        result["database_warning"] = str(error)
+        return result
+    except ProductDatabaseError as error:
+        result["product_id"] = product_id
+        result["database_warning"] = str(error)
+        return result
 
 
 # ============================================================
