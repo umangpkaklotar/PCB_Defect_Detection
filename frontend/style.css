@@ -196,13 +196,228 @@ body {
 
 .barcode-image {
     display: block;
-    width: 145px;
-    height: 52px;
+    width: min(450px, 100%);
+    height: clamp(120px, 18vw, 180px);
     margin-top: 10px;
-    padding: 4px;
-    background: #ffffff;
-    border-radius: 5px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     object-fit: contain;
+}
+
+
+/* ============================================================
+   BARCODE SCANNER
+   ============================================================ */
+
+.barcode-scanner-section {
+    margin-bottom: 30px;
+    padding: 0 28px 28px;
+    background: linear-gradient(145deg, #111827, #0f172a);
+    border: 1px solid #263449;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 14px 35px rgba(2, 6, 23, 0.25);
+}
+
+
+.barcode-scanner-section .inspection-header {
+    margin: 0 -28px 24px;
+    background: rgba(15, 23, 42, 0.72);
+}
+
+
+.barcode-scanner-panel {
+    padding: 20px;
+    background: #020617;
+    border: 1px solid #263449;
+    border-radius: 14px;
+    text-align: center;
+}
+
+
+.barcode-scanner-video {
+    display: block;
+    width: min(100%, 520px);
+    max-height: 360px;
+    margin: 0 auto 14px;
+    background: #020617;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+
+.scanner-status,
+.product-not-found {
+    margin: 12px 0;
+    color: #9ca3af;
+    font-size: 13px;
+    text-align: center;
+}
+
+
+.product-not-found {
+    color: #fca5a5;
+}
+
+
+.product-details {
+    display: grid;
+    gap: 12px;
+    margin-top: 24px;
+    padding: 18px;
+    background: #0b1220;
+    border: 1px solid #334155;
+    border-radius: 16px;
+}
+
+
+.scanner-product-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 22px;
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+}
+
+
+.scanner-product-heading span {
+    color: #dbeafe;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+
+.scanner-product-heading strong {
+    color: #ffffff;
+    font-size: clamp(22px, 4vw, 32px);
+    letter-spacing: 0.05em;
+}
+
+
+.scanner-defects-section {
+    padding: 20px;
+    background: rgba(2, 6, 23, 0.46);
+    border: 1px solid #263449;
+    border-radius: 14px;
+}
+
+
+.scanner-defects-section h3 {
+    margin-bottom: 14px;
+    color: #ffffff;
+    font-size: 17px;
+}
+
+
+.scanner-defect-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+
+.scanner-defect-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 64px;
+    padding: 12px 14px;
+    background: #111c30;
+    border: 1px solid #30415b;
+    border-radius: 10px;
+}
+
+
+.scanner-defect-card span {
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+.scanner-defect-card strong {
+    min-width: 32px;
+    padding: 5px 8px;
+    color: #ffffff;
+    background: #334155;
+    border-radius: 7px;
+    font-size: 16px;
+    text-align: center;
+}
+
+
+.product-detail-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 15px 17px;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid #263449;
+    border-radius: 10px;
+    color: #d1d5db;
+    font-size: 13px;
+}
+
+
+.product-detail-row > span {
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+
+.product-detail-row strong {
+    color: #ffffff;
+    text-align: right;
+}
+
+
+.product-detail-block {
+    display: block;
+}
+
+
+.product-detail-block pre {
+    margin-top: 8px;
+    padding: 10px;
+    overflow-x: auto;
+    color: #d1d5db;
+    background: #020617;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+
+.scanned-product-barcode {
+    display: block;
+    width: min(100%, 420px);
+    height: clamp(120px, 18vw, 180px);
+    margin-top: 10px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    object-fit: contain;
+}
+
+
+.scanner-barcode-result {
+    padding: 16px;
+    background: transparent;
+    border: 0;
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
 }
 
 
@@ -750,6 +965,50 @@ button {
 
     .input-section {
         grid-template-columns: 1fr;
+    }
+
+
+    .barcode-scanner-section {
+        padding: 0 16px 18px;
+    }
+
+
+    .barcode-scanner-section .inspection-header {
+        margin-right: -16px;
+        margin-left: -16px;
+    }
+
+
+    .barcode-scanner-panel {
+        padding: 12px;
+    }
+
+
+    .scanner-product-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+
+    .scanner-defects-section {
+        padding: 15px;
+    }
+
+
+    .scanner-defect-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+
+    .product-detail-row {
+        flex-direction: column;
+        gap: 7px;
+    }
+
+
+    .product-detail-row strong {
+        text-align: left;
     }
 
 

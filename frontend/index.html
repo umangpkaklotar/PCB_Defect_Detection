@@ -134,6 +134,49 @@
 
 
             <!-- =================================================
+                 BARCODE SCANNER
+                 ================================================= -->
+            <section class="barcode-scanner-section">
+
+                <div class="inspection-header">
+                    <div>
+                        <h2>Find PCB by Barcode</h2>
+                        <p>Scan an existing Product ID to view its stored details.</p>
+                    </div>
+
+                    <button id="scanBarcodeBtn" class="secondary-btn">
+                        Scan Barcode
+                    </button>
+                </div>
+
+                <div id="barcodeScannerPanel" class="barcode-scanner-panel" hidden>
+                    <video
+                        id="barcodeScannerVideo"
+                        class="barcode-scanner-video"
+                        autoplay
+                        muted
+                        playsinline
+                    ></video>
+
+                    <p id="barcodeScannerStatus" class="scanner-status">
+                        Scanner closed
+                    </p>
+
+                    <button
+                        id="stopBarcodeScannerBtn"
+                        class="danger-btn"
+                    >
+                        Stop Scanner
+                    </button>
+                </div>
+
+                <p id="productNotFound" class="product-not-found" hidden></p>
+                <div id="productDetails" class="product-details" hidden></div>
+
+            </section>
+
+
+            <!-- =================================================
                  INSPECTION AREA
                  ================================================= -->
             <section class="inspection-section">
@@ -340,8 +383,10 @@
     </div>
 
 
-    <!-- Connect JavaScript -->
+    <!-- ZXing decodes barcodes directly from the browser camera. -->
+    <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"></script>
     <script src="/frontend/script.js"></script>
+    <script src="/frontend/barcode_scanner.js"></script>
 
 </body>
 

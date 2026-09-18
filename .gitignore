@@ -28,6 +28,7 @@ ENV/
 .idea/
 .DS_Store
 Thumbs.db
+certs/
 
 # Machine learning artifacts and large files
 *.pt
