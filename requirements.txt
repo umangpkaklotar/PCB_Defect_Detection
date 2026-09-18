@@ -8,6 +8,7 @@ ultralytics==8.4.150
 fastapi==0.141.1
 uvicorn==0.53.0
 python-multipart==0.0.32
+python-barcode==0.16.1
 
 # MongoDB integration and environment configuration
 pymongo==4.15.1

@@ -41,6 +41,8 @@ import base64
 import cv2
 import numpy as np
 
+from backend.barcode_manager import get_or_create_barcode
+
 from backend.product_manager import (
     ProductDatabaseError,
     ProductIdConflictError,
@@ -167,6 +169,10 @@ def create_pcb_product(request: ProductCreateRequest):
             )
 
         product = create_product(product_type)
+        get_or_create_barcode(product["product_id"])
+        product["barcode_url"] = (
+            f"/api/products/{product['product_id']}/barcode"
+        )
         return product
     except HTTPException:
         raise
@@ -193,6 +199,9 @@ def retrieve_pcb_product(product_id: str):
                 status_code=404,
                 detail="Product not found."
             )
+        product["barcode_url"] = (
+            f"/api/products/{product['product_id']}/barcode"
+        )
         return product
     except HTTPException:
         raise
@@ -211,9 +220,43 @@ def recent_pcb_products(limit: int = 20):
         )
 
     try:
-        return {
-            "products": list_recent_products(limit)
-        }
+        products = list_recent_products(limit)
+        for product in products:
+            product["barcode_url"] = (
+                f"/api/products/{product['product_id']}/barcode"
+            )
+        return {"products": products}
+    except ProductDatabaseError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+@app.get("/api/products/{product_id}/barcode")
+def product_barcode(product_id: str):
+    """Return the reusable barcode image for an existing Product ID."""
+
+    if not product_id.strip():
+        raise HTTPException(
+            status_code=422,
+            detail="Product ID cannot be empty."
+        )
+
+    try:
+        product = get_product(product_id.strip())
+        if product is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Product not found."
+            )
+
+        return FileResponse(
+            get_or_create_barcode(product["product_id"]),
+            media_type="image/png",
+            filename=f"{product['product_id']}.png"
+        )
+    except HTTPException:
+        raise
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
     except ProductDatabaseError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
 
@@ -453,7 +496,9 @@ def link_inspection_to_product(
         "image_fingerprint": image_fingerprint
     }
     record_inspection(product_id, inspection)
+    get_or_create_barcode(product_id)
     result["product_id"] = product_id
+    result["barcode_url"] = f"/api/products/{product_id}/barcode"
     result["product_reused"] = product_reused
     result["product_message"] = (
         "Existing PCB found; details updated."

@@ -194,6 +194,18 @@ body {
 }
 
 
+.barcode-image {
+    display: block;
+    width: 145px;
+    height: 52px;
+    margin-top: 10px;
+    padding: 4px;
+    background: #ffffff;
+    border-radius: 5px;
+    object-fit: contain;
+}
+
+
 /* ============================================================
    INPUT SECTION
    ============================================================ */

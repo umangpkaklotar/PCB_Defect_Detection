@@ -47,6 +47,8 @@ const newProductBtn =
     document.getElementById("newProductBtn");
 const currentProductId =
     document.getElementById("currentProductId");
+const barcodeImage =
+    document.getElementById("barcodeImage");
 
 const cameraBtn = document.getElementById("cameraBtn");
 const stopCameraBtn = document.getElementById("stopCameraBtn");
@@ -194,6 +196,8 @@ async function createProduct() {
 
         currentProductId.textContent =
             activeProductId;
+
+        showBarcode(data.barcode_url);
 
         inspectionStatus.textContent =
             `${activeProductId} ready for inspection`;
@@ -375,6 +379,8 @@ imageInput.addEventListener(
                 activeProductId = data.product_id;
                 currentProductId.textContent = activeProductId;
             }
+
+            showBarcode(data.barcode_url);
 
             if (data.product_message) {
                 inspectionStatus.textContent =
@@ -809,6 +815,8 @@ async function captureCameraFrame() {
             currentProductId.textContent = activeProductId;
         }
 
+        showBarcode(data.barcode_url);
+
         if (data.image) {
 
             cameraResultImage.src =
@@ -1083,6 +1091,18 @@ function updateConfidence(confidence) {
 
     highestConfidence.textContent =
         percentage + "%";
+
+}
+
+
+function showBarcode(barcodeURL) {
+
+    if (!barcodeURL) {
+        return;
+    }
+
+    barcodeImage.src = `${API_URL}${barcodeURL}`;
+    barcodeImage.hidden = false;
 
 }
 
